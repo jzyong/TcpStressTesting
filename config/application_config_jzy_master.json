@@ -1,0 +1,14 @@
+{
+  "rpcHost": "192.168.110.2:5010",
+  "masterHost": "192.168.110.2:5010",
+  "master": true,
+  "userCount": 1,
+  "spawnRate": 1,
+  "profile": "jzy",
+  "logLevel": "DEBUG",
+  "name": "master",
+  "gateUrls": [
+    "47.108.220.52:40017",
+    "47.108.220.52:40018"
+  ]
+}

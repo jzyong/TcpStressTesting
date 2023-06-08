@@ -1,0 +1,8 @@
+{
+  "rpcHost": "172.24.107.102:5013",
+  "masterHost": "172.24.107.102:40028",
+  "master": false,
+  "profile": "test",
+  "logLevel": "DEBUG",
+  "name": "worker3"
+}

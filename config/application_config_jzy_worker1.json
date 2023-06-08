@@ -1,0 +1,8 @@
+{
+  "rpcHost": "192.168.110.2:5011",
+  "masterHost": "192.168.110.2:5010",
+  "master": false,
+  "profile": "jzy",
+  "logLevel": "DEBUG",
+  "name": "worker1"
+}
