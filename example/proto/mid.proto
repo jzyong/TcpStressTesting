@@ -1,0 +1,16 @@
+syntax = "proto3";
+package proto;
+option go_package = "/message";
+
+
+//消息ID枚举
+enum MID{
+  None=0;
+  // Account
+  UserLoginReq = 1000001;  //用户登录
+  UserLoginRes = 1000002;  //用户登录
+  ReconnectReq = 1000003;  //重连
+  ReconnectRes = 1000004;  //重连
+  HeartReq = 1000005;  //心跳
+  HeartRes = 1000006;  //心跳
+}

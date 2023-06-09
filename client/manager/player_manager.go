@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/dls/slots/message/hall"
-	model2 "github.com/dls/slots/stress-testing-service/client/model"
-	network "github.com/dls/slots/stress-testing-service/client/network"
-	"github.com/dls/slots/stress-testing-service/config"
-	"github.com/dls/slots/stress-testing-service/core/manager"
-	"github.com/dls/slots/stress-testing-service/core/model"
-	proto2 "github.com/dls/slots/stress-testing-service/core/proto"
 	"github.com/golang/protobuf/proto"
+	"github.com/jzyong/TcpStressTesting/client/message"
+	model2 "github.com/jzyong/TcpStressTesting/client/model"
+	network "github.com/jzyong/TcpStressTesting/client/network"
+	"github.com/jzyong/TcpStressTesting/config"
+	"github.com/jzyong/TcpStressTesting/core/manager"
+	"github.com/jzyong/TcpStressTesting/core/model"
+	proto2 "github.com/jzyong/TcpStressTesting/core/proto"
 	"github.com/jzyong/golib/log"
 	"github.com/jzyong/golib/util"
 	"runtime"
@@ -22,7 +22,7 @@ import (
 type PlayerManager struct {
 	util.DefaultModule
 	players           sync.Map                  //map[int64]*model2.Player  //所有玩家
-	imelPlayers       sync.Map                  //map[string]*model2.Player //所有玩家
+	imeiPlayers       sync.Map                  //map[string]*model2.Player //所有玩家
 	MessageDistribute network.MessageDistribute //消息分发
 	loginCount        int32                     //已经登录人数
 }
@@ -43,7 +43,6 @@ func (m *PlayerManager) Init() error {
 	log.Info("[玩家] 初始化")
 	m.MessageDistribute = network.NewMessageDistribute(uint32(runtime.NumCPU()), nil, handlerExecuteFinish)
 	m.MessageDistribute.StartWorkerPool()
-
 	return nil
 }
 
@@ -56,7 +55,7 @@ func (m *PlayerManager) Run() {
 	go m.playerLoginRun()
 
 	//设置总压测消息个数
-	manager.GetStatisticManager().MessageInterfaceCount = len(hall.MID_name)
+	manager.GetStatisticManager().MessageInterfaceCount = len(message.MID_name)
 }
 
 // Stop 关闭
@@ -75,8 +74,6 @@ func (m *PlayerManager) updateSecond() {
 
 	nowTime := util.CurrentTimeMillisecond()
 
-	//m.playerLock.Lock()
-	//defer m.playerLock.Unlock()
 	m.players.Range(func(_, value any) bool {
 		player := value.(*model2.Player)
 		if !player.TcpClient.GetChannel().IsClose() {
@@ -89,8 +86,6 @@ func (m *PlayerManager) updateSecond() {
 // 每秒更新
 // 进行玩家定时任务检测，执行转发到对应的chan中
 func (m *PlayerManager) updateFiveSecond() {
-	//m.playerLock.Lock()
-	//defer m.playerLock.Unlock()
 	m.players.Range(func(key, value any) bool {
 		player := value.(*model2.Player)
 		if player.TcpClient.GetChannel().IsClose() {
@@ -114,7 +109,6 @@ func (m *PlayerManager) playerFiveSecondUpdate(player *model2.Player) {
 
 		now := util.Now().UnixNano()
 		//检测 请求失败消息
-		//var failInfo *proto2.PlayerMessageInfo = nil
 		for _, info := range player.StatisticMessage {
 			if (now - info.StartTime) > model.MessageRequestFailTime {
 				info.ExecuteTime = now - info.StartTime
@@ -168,7 +162,7 @@ func (m *PlayerManager) batchPlayerLogin() {
 	accounts := make([]string, 0, spawnRate)
 	for i := 0; i < int(spawnRate); i++ {
 		m.loginCount++
-		accounts = append(accounts, fmt.Sprintf("%v_%v", model2.PlayerImelPrefix, m.loginCount))
+		accounts = append(accounts, fmt.Sprintf("%v_%v", model2.PlayerImeiPrefix, m.loginCount))
 		//防止多登录
 		if m.loginCount >= config.ApplicationConfigInstance.UserCount {
 			break
@@ -183,10 +177,6 @@ func (m *PlayerManager) batchPlayerLogout() {
 	if manager.GetControlManager().TestState != model.TestQuit {
 		return
 	}
-	//playerCount := len(m.players)
-	//if playerCount < 1 {
-	//	return
-	//}
 
 	var playerCount = 0
 	m.players.Range(func(key, value any) bool {
@@ -198,14 +188,7 @@ func (m *PlayerManager) batchPlayerLogout() {
 		return true
 	})
 	m.players = sync.Map{}
-	m.imelPlayers = sync.Map{}
-	//for id, player := range m.players {
-	//	log.Debug("%v 退出游戏", id)
-	//	player.TcpClient.GetChannel().Stop()
-	//	player.TcpClient.Stop()
-	//}
-	//m.players = make(map[int64]*model2.Player)
-	//m.imelPlayers = make(map[string]*model2.Player)
+	m.imeiPlayers = sync.Map{}
 	m.loginCount = 0
 	manager.GetStatisticManager().ResetStatisticData() //重置一下统计
 	log.Info("退出玩家数量：%v", playerCount)
@@ -237,10 +220,6 @@ func (m *PlayerManager) playerLogin(loginInfo []string) {
 	tcpClient.SetChannelActive(clientChannelActive)
 	go tcpClient.Start()
 
-	//添加玩家
-	//使用设备码进行登录，账号从服务器获取
-	//m.playerLock.Lock()
-	//defer m.playerLock.Unlock()
 	player := &model2.Player{
 		Imel:             imel,
 		TestType:         testType,
@@ -250,17 +229,13 @@ func (m *PlayerManager) playerLogin(loginInfo []string) {
 		ScheduleJobs:     make([]*network.ScheduleJob, 0, 10),
 		WightJobs:        make([]*model2.PlayerWightJob, 0, 30),
 	}
-	m.imelPlayers.Store(imel, player)
-	//m.imelPlayers[imel] = player
+	m.imeiPlayers.Store(imel, player)
 
 	//log.Debug("%v 开始登录", account)
 }
 
 // AddPlayer 添加玩家
 func (m *PlayerManager) AddPlayer(player *model2.Player) {
-	//m.playerLock.Lock()
-	//defer m.playerLock.Unlock()
-	//m.players[player.Id] = player
 	m.players.Store(player.Id, player)
 }
 
@@ -279,12 +254,8 @@ func (m *PlayerManager) GetPlayer(id int64) *model2.Player {
 }
 
 // 获取玩家 通过设备号
-func (m *PlayerManager) GetPlayerByImel(imel string) *model2.Player {
-	//m.playerLock.Lock()
-	//defer m.playerLock.Unlock()
-	//p, _ := m.imelPlayers[imel]
-	//return p
-	p, ok := m.imelPlayers.Load(imel)
+func (m *PlayerManager) GetPlayerByImei(imei string) *model2.Player {
+	p, ok := m.imeiPlayers.Load(imei)
 	if ok {
 		return p.(*model2.Player)
 	}
@@ -293,27 +264,14 @@ func (m *PlayerManager) GetPlayerByImel(imel string) *model2.Player {
 
 // 根据服务器返回消息获取玩家
 func (m *PlayerManager) GetPlayerByMsg(msg network.TcpMessage) *model2.Player {
-	imelObject, _ := msg.GetTcpChannel().GetProperty(network.TcpName)
-	imel := imelObject.(string)
-	player := m.GetPlayerByImel(imel)
+	imeiObject, _ := msg.GetTcpChannel().GetProperty(network.TcpName)
+	imei := imeiObject.(string)
+	player := m.GetPlayerByImei(imei)
 	return player
 }
 
-// 绑定邮箱
-func (m *PlayerManager) bindEmailRequest(player *model2.Player) {
-	email := fmt.Sprintf("%v@qq.com", util.RandomInt32(1000000, 1000000000))
-	request := &hall.Req3000109{Email: &email}
-	SendMessage(player, hall.MID_BindEmailReqMid, request)
-}
-
-// 请求大厅信息
-func (m *PlayerManager) hallInfoRequest(player *model2.Player) {
-	request := &hall.Req3000003{}
-	SendMessage(player, hall.MID_HallInfoReqMid, request)
-}
-
 // 发送消息 （所有消息必须从此次发送，添加序列号）
-func SendMessage(player *model2.Player, mid hall.MID, message proto.Message) {
+func SendMessage(player *model2.Player, mid message.MID, message proto.Message) {
 	messageId := int32(mid)
 	if player.TcpClient == nil || player.TcpClient.GetChannel() == nil {
 		log.Info("%v-%v 未创建socket连接 消息:%v 发送失败", player.Id, player.Imel, messageId)
