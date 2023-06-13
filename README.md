@@ -52,7 +52,6 @@ go test
 
 ## TODO
 
-* GitHub page文档
 * Unity 界面统计整理
 * docker 部署测试
 
