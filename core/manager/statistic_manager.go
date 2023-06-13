@@ -30,7 +30,8 @@ type StatisticManager struct {
 	statisticUploadCount             int                                              //统计消息上传次数
 	StatisticLogs                    *list.List                                       //统计日志
 	MessageInterfaceCount            int
-	statisticLock                    sync.RWMutex //锁
+	statisticLock                    sync.RWMutex                 //锁
+	MessageNameFun                   func(messageId int32) string //消息名称
 }
 
 var statisticManager *StatisticManager
@@ -43,7 +44,7 @@ func GetStatisticManager() *StatisticManager {
 	return statisticManager
 }
 
-// 开始启动
+// Init 开始启动
 func (receiver *StatisticManager) Init() error {
 	receiver.MessageInterfaceCount = 1
 	receiver.PlayerMessageInfoChan = make(chan *proto.PlayerMessageInfo, 1024)
@@ -54,6 +55,10 @@ func (receiver *StatisticManager) Init() error {
 		receiver.MasterStatisticMessageInfos = make(map[int32]*proto.MessageInterfaceInfo)
 		receiver.StatisticMessageChan = make(chan *proto.UploadStatisticsRequest, 1024)
 		receiver.StatisticLogs = list.New()
+	}
+	//设置默认函数
+	receiver.MessageNameFun = func(messageId int32) string {
+		return "功能未实现"
 	}
 	log.Info("[统计] 初始化")
 	return nil

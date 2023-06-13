@@ -18,7 +18,7 @@ var userId int64 = 0
 
 // 启动服务器
 func TestSever(t *testing.T) {
-	listener, err := net.Listen("tcp", ":7010")
+	listener, err := net.Listen("tcp", ":7070")
 	if err != nil {
 		fmt.Println("Error listening:", err)
 		return

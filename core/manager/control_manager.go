@@ -99,21 +99,12 @@ func (receiver *ControlManager) StartTestSend(serverHosts string, slotsId, playe
 	return 0, "开始压力测试"
 }
 
-// 停止压力测试 backend-->master
+// StopTestSend 停止压力测试 backend-->master
 func (receiver *ControlManager) StopTestSend() int32 {
 	if receiver.TestState == model.TestIdle {
 		log.Info("压力测试已经结束，重复请求")
 		return 0
 	}
-
-	////打印未测试接口
-	//for k, v := range hall.MID_name {
-	//	info := GetStatisticManager().MasterStatisticMessageInfos[k]
-	//	if info != nil {
-	//		continue
-	//	}
-	//	log.Debug("%v - %v 未测试", k, v)
-	//}
 
 	// 广播worker 停止压力测试
 	logoutRequest := &proto.PlayerAllQuitRequest{}

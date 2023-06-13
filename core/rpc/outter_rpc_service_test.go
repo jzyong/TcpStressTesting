@@ -12,7 +12,7 @@ import (
 
 const (
 	rpcHosts = "127.0.0.1:5010"
-	GateUrls = "127.0.0.1:40017,127.0.0.1:40018"
+	GateUrls = "127.0.0.1:7070"
 )
 
 // 开启测试
@@ -32,7 +32,7 @@ func TestStartTest(t *testing.T) {
 	response, err := client.StartTest(ctx, &proto.StartTestRequest{
 		ServerHosts: GateUrls,
 		SpawnRate:   1,
-		PlayerCount: 1,
+		PlayerCount: 3,
 		TestType:    0,
 	})
 

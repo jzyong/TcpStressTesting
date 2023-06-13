@@ -7,11 +7,11 @@ import (
 	"github.com/jzyong/golib/util"
 )
 
-// 玩家对象
+// Player 玩家对象
 type Player struct {
 	Id               int64                              //玩家id
 	Nick             string                             //昵称
-	Imel             string                             //设备号
+	Imei             string                             //设备号
 	Account          string                             //账号
 	Password         string                             //密码
 	MessageSeq       int32                              //消息序列号，自增长
@@ -26,7 +26,7 @@ type Player struct {
 	BetGold          int64                              //下注金币
 }
 
-// 添加权重任务
+// AddWightJob 添加权重任务
 func (p *Player) AddWightJob(wight int32, f func()) {
 	job := &PlayerWightJob{
 		Wight: wight,
@@ -36,13 +36,13 @@ func (p *Player) AddWightJob(wight int32, f func()) {
 	p.WightJobs = append(p.WightJobs, job)
 }
 
-// AddScheduleJob 添加掉单任务 ms
+// AddScheduleJob 添加定时任务 ms
 func (p *Player) AddScheduleJob(intervalTime, executeCount int32, f func()) {
 	job := network.NewScheduleJob(intervalTime, executeCount, f)
 	p.ScheduleJobs = append(p.ScheduleJobs, job)
 }
 
-// 添加统计消息
+// AddMessageInfo 添加统计消息
 func (p *Player) AddMessageInfo(messageId, sequenceNo int32, requestLength int32) {
 	m := &proto.PlayerMessageInfo{
 		MessageId:          messageId,
@@ -54,7 +54,7 @@ func (p *Player) AddMessageInfo(messageId, sequenceNo int32, requestLength int32
 	p.StatisticMessage[sequenceNo] = m
 }
 
-// 移除统计消息
+// RemoveMessageInfo 移除统计消息
 func (p *Player) RemoveMessageInfo(sequenceNo int32) *proto.PlayerMessageInfo {
 	if sequenceNo < 1 {
 		return nil
@@ -68,7 +68,7 @@ func (p *Player) RemoveMessageInfo(sequenceNo int32) *proto.PlayerMessageInfo {
 	return nil
 }
 
-// 权重任务
+// PlayerWightJob 权重任务
 type PlayerWightJob struct {
 	Wight int32 //权重
 	Fun   func()

@@ -92,8 +92,8 @@ func (m *PlayerManager) updateFiveSecond() {
 			// 进行断线重连，离线服务器可能踢掉死玩家，如一直不给网关或大厅发送消息
 			// 先直接从走登录流程，后面优化走断线重连
 			loginInf := make([]string, 0, 3)
-			loginInf = append(loginInf, player.Imel, fmt.Sprintf("%v", player.TestType), player.GateUrl)
-			log.Debug("%v %v %v 重连进入游戏", player.Id, player.Imel, player.GateUrl)
+			loginInf = append(loginInf, player.Imei, fmt.Sprintf("%v", player.TestType), player.GateUrl)
+			log.Debug("%v %v %v 重连进入游戏", player.Id, player.Imei, player.GateUrl)
 			m.playerLogin(loginInf)
 		} else {
 			m.playerFiveSecondUpdate(player)
@@ -212,16 +212,16 @@ func (m *PlayerManager) playerLoginRun() {
 
 // 玩家登录 登录来着master 分配的玩家，创建socket，进行账号获取，账号登陆
 func (m *PlayerManager) playerLogin(loginInfo []string) {
-	imel := loginInfo[0]
+	imei := loginInfo[0]
 	testType := util.ParseInt32(loginInfo[1])
 	gateUrl := loginInfo[2]
-	tcpClient, _ := network.NewTcpClient(imel, gateUrl, m.MessageDistribute)
+	tcpClient, _ := network.NewTcpClient(imei, gateUrl, m.MessageDistribute)
 	tcpClient.SetChannelInactive(clientChannelInactive)
 	tcpClient.SetChannelActive(clientChannelActive)
 	go tcpClient.Start()
 
 	player := &model2.Player{
-		Imel:             imel,
+		Imei:             imei,
 		TestType:         testType,
 		TcpClient:        tcpClient,
 		GateUrl:          gateUrl,
@@ -229,7 +229,7 @@ func (m *PlayerManager) playerLogin(loginInfo []string) {
 		ScheduleJobs:     make([]*network.ScheduleJob, 0, 10),
 		WightJobs:        make([]*model2.PlayerWightJob, 0, 30),
 	}
-	m.imeiPlayers.Store(imel, player)
+	m.imeiPlayers.Store(imei, player)
 
 	//log.Debug("%v 开始登录", account)
 }
@@ -253,7 +253,7 @@ func (m *PlayerManager) GetPlayer(id int64) *model2.Player {
 	return nil
 }
 
-// 获取玩家 通过设备号
+// GetPlayerByImei 获取玩家 通过设备号
 func (m *PlayerManager) GetPlayerByImei(imei string) *model2.Player {
 	p, ok := m.imeiPlayers.Load(imei)
 	if ok {
@@ -262,7 +262,7 @@ func (m *PlayerManager) GetPlayerByImei(imei string) *model2.Player {
 	return nil
 }
 
-// 根据服务器返回消息获取玩家
+// GetPlayerByMsg 根据服务器返回消息获取玩家
 func (m *PlayerManager) GetPlayerByMsg(msg network.TcpMessage) *model2.Player {
 	imeiObject, _ := msg.GetTcpChannel().GetProperty(network.TcpName)
 	imei := imeiObject.(string)
@@ -270,16 +270,16 @@ func (m *PlayerManager) GetPlayerByMsg(msg network.TcpMessage) *model2.Player {
 	return player
 }
 
-// 发送消息 （所有消息必须从此次发送，添加序列号）
+// SendMessage 发送消息 （所有消息必须从此次发送，添加序列号）
 func SendMessage(player *model2.Player, mid message.MID, message proto.Message) {
 	messageId := int32(mid)
 	if player.TcpClient == nil || player.TcpClient.GetChannel() == nil {
-		log.Info("%v-%v 未创建socket连接 消息:%v 发送失败", player.Id, player.Imel, messageId)
+		log.Info("%v-%v 未创建socket连接 消息:%v 发送失败", player.Id, player.Imei, messageId)
 		return
 	}
 	c := player.TcpClient.GetChannel()
 	if c.IsClose() {
-		log.Info("%v-%v channel已关闭 消息:%v 发送失败", player.Id, player.Imel, messageId)
+		log.Info("%v-%v channel已关闭 消息:%v 发送失败", player.Id, player.Imei, messageId)
 		return
 	}
 	data, err := proto.Marshal(message)
@@ -294,28 +294,28 @@ func SendMessage(player *model2.Player, mid message.MID, message proto.Message) 
 	//写dataLen 不包含自身长度
 	length := 12 + uint32(len(data))
 	if err := binary.Write(dataBuff, binary.LittleEndian, length); err != nil {
-		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imel, messageId, err)
+		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imei, messageId, err)
 		return
 	}
 	//写msgID
 	if err := binary.Write(dataBuff, binary.LittleEndian, messageId); err != nil {
-		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imel, messageId, err)
+		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imei, messageId, err)
 		return
 	}
 	//写确认序列号
 	if err := binary.Write(dataBuff, binary.LittleEndian, player.MessageAck); err != nil {
-		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imel, messageId, err)
+		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imei, messageId, err)
 		return
 	}
 	player.MessageSeq += 1
 	//写 序列号
 	if err := binary.Write(dataBuff, binary.LittleEndian, player.MessageSeq); err != nil {
-		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imel, messageId, err)
+		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imei, messageId, err)
 		return
 	}
 	//写data数据
 	if err := binary.Write(dataBuff, binary.LittleEndian, data); err != nil {
-		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imel, messageId, err)
+		log.Info("%v-%v channel已关闭 消息:%v 编码错误：%v", player.Id, player.Imei, messageId, err)
 		return
 	}
 	player.AddMessageInfo(messageId, player.MessageSeq, int32(length))
@@ -325,8 +325,17 @@ func SendMessage(player *model2.Player, mid message.MID, message proto.Message) 
 
 // 链接激活
 func clientChannelActive(channel network.TcpChannel) {
-	//log.Info("创建网关连接：%v", channel.RemoteAddr())
-	//  添加属性
+	//登录
+	imeiObject, _ := channel.GetProperty(network.TcpName)
+	imei := imeiObject.(string)
+	player := GetPlayerManager().GetPlayerByImei(imei)
+	if player == nil {
+		log.Warn("%v : 获取密钥玩家未找到", imei)
+		return
+	}
+	request := &message.UserLoginRequest{Account: imei, Password: imei, Imei: imei}
+	SendMessage(player, message.MID_UserLoginReq, request)
+
 }
 
 // 链接断开

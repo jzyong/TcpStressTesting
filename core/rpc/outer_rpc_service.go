@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-// 外部rpc请求，逻辑不写在这里面，后面可能会http请求
+// OuterRpcService 外部rpc请求，逻辑不写在这里面，后面可能会http请求
 type OuterRpcService struct {
 	proto.UnimplementedStressTestingOuterServiceServer
 }
 
-// 启动测试
+// StartTest 启动测试
 func (service *OuterRpcService) StartTest(ctx context.Context, request *proto.StartTestRequest) (*proto.StartTestResponse, error) {
 	status, result := manager.GetControlManager().StartTestSend(request.GetServerHosts(), request.GetTestType(), request.GetPlayerCount(), request.GetSpawnRate())
 	response := &proto.StartTestResponse{
@@ -24,7 +24,7 @@ func (service *OuterRpcService) StartTest(ctx context.Context, request *proto.St
 	return response, nil
 }
 
-// 停止压力测试
+// StopTest 停止压力测试
 func (service *OuterRpcService) StopTest(ctx context.Context, request *proto.StopTestRequest) (*proto.StopTestResponse, error) {
 	status := manager.GetControlManager().StopTestSend()
 	response := &proto.StopTestResponse{
@@ -33,7 +33,7 @@ func (service *OuterRpcService) StopTest(ctx context.Context, request *proto.Sto
 	return response, nil
 }
 
-// 请求接口信息
+// RequestInterfaceInfo 请求接口信息
 func (service *OuterRpcService) RequestInterfaceInfo(ctx context.Context, request *proto.RequestInterfaceRequest) (*proto.RequestInterfaceResponse, error) {
 
 	response := &proto.RequestInterfaceResponse{}
@@ -45,7 +45,7 @@ func (service *OuterRpcService) RequestInterfaceInfo(ctx context.Context, reques
 			if info.IsRequestMessage() {
 				pastSecond := info.PastSecond()
 				interfaceInfo := &proto.RequestInterfaceResponse_MessageInterfaceInfo{
-					MessageName:     "", //TODO 名字，最好不要和client逻辑耦合，通过回调方法获取
+					MessageName:     manager.GetStatisticManager().MessageNameFun(info.MessageId),
 					MessageId:       info.MessageId,
 					RequestCount:    info.RequestCount(),
 					FailCount:       info.FailCount,
@@ -75,7 +75,7 @@ func (service *OuterRpcService) PushInterfaceInfo(ctx context.Context, request *
 		for _, info := range infos {
 			if !info.IsRequestMessage() {
 				interfaceInfo := &proto.PushInterfaceResponse_MessageInterfaceInfo{
-					MessageName: "", //TODO 名字，最好不要和client逻辑耦合，通过回调方法获取
+					MessageName: manager.GetStatisticManager().MessageNameFun(info.MessageId),
 					Count:       info.PushCount,
 					SizeAverage: info.SizeAverage(),
 					Rps:         info.PushRps(0),
@@ -119,7 +119,7 @@ func (service *OuterRpcService) StatisticsLog(ctx context.Context, request *prot
 	return response, nil
 }
 
-// 获取worker信息
+// WorkerServerInfo 获取worker信息
 func (service *OuterRpcService) WorkerServerInfo(ctx context.Context, request *proto.WorkerServerInfoRequest) (*proto.WorkerServerInfoResponse, error) {
 	workerServerInfos := make([]*proto.WorkerServerInfoResponse_WorkerServerInfo, 0, 3)
 	clients := manager.GetNetworkManager().WorkerClientList
