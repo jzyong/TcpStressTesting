@@ -1,6 +1,6 @@
 # Tcp Stress Test Tool
 
-&nbsp;&nbsp;Distributed customized TCP protocol stress testing,statistics tool.
+&nbsp;&nbsp;&nbsp;&nbsp;Distributed customized TCP protocol stress testing,statistics tool.
 Because the TCP protocol of each project is different, the project cannot be directly used.
 You need to modify the TCP packet logic and application logic by yourself.
 
@@ -53,6 +53,6 @@ go test
 ## TODO
 
 * Unity 界面统计整理
-* docker 部署测试
+* docker compose 部署测试
 
 
