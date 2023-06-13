@@ -1,36 +1,58 @@
-# 简介
+# Tcp Stress Test Tool
 
-压力测试集群客户端，参考Locust特点进行开发。 Locust对Http支持良好，TCP需要自己扩展，需要学习Python，不能很好进行功能扩展，自己实现额外功能。
+&nbsp;&nbsp;Distributed customized TCP protocol stress testing,statistics tool.
+Because the TCP protocol of each project is different, the project cannot be directly used.
+You need to modify the TCP packet logic and application logic by yourself.
+[Document](https://jzyong.github.io/TcpStressTesting/)
 
-| 目录      | 描述                         |
-|---------|----------------------------|
-| client  | 客户端逻辑，client调用core，不能反向调用  |
-| config  | 配置文件                       |
-| core    | 公共基础包,和游戏逻辑无关，实现类似Locust功能 |
-| example | 示例服务器                      |
-| res     | 文档，protobuf等               |
+| Directory | Description                   |
+|-----------|-------------------------------|
+| client    | tcp client logic(need modify) |
+| config    | config file                   |
+| core      | core logic                    |
+| example   | server demo                   |
+| res       | document,script               |
 
-## 特性
+## Features
 
-* 集群实现，支持最大压测负荷
-* 消息延迟（最小值，最大值，平均值）
-* 流量统计（平均，总共）
-* 主机CPU，内存消耗
-* 单独统计请求协议和返回协议
-* 协议统计支持lua表达式过滤
+* Cluster implementation, support for maximum pressure load
+* Message delay (minimum, maximum, average)
+* Traffic statistics (average, total)
+* Server CPU and memory consumption
+* Request message and respond message are counted separately
+* Message statistics support lua expression filtering
 
-## 玩家调度模型
+## Usage
+### Command line
 
-1. 创建go routine池
-2. 请求返回消息根据玩家id选择routine执行
-3. cron定时器检测玩家，执行逻辑封装成job丢入routine池，根据玩家id分发
-4. 玩家调度任务封装成ScheduleJob加入玩家slice中，PlayerManager定时检测，时间到了丢入routine池，根据玩家id分发
+```shell
+# 1. Clone Project
+git clone https://github.com/jzyong/TcpStressTesting.git
+cd TcpStressTesting
+
+# 2. Build and run tool
+go build
+.\TcpStressTesting.exe --config config/application_config_jzy_master.json
+
+# 3. Run example server
+cd .\example\
+go test
+
+# 4. Start and stop test
+ cd .\core\rpc\
+ go test -v -run StartTest
+ go test -v -run StopTest
+```
+
+### Docker
+ TODO
+
+### Statistical UI
+ TODO
 
 ## TODO
-* README编写
+
 * GitHub page文档
-* example测试服务器，protobuf
-* 协议生成
 * Unity 界面统计整理
 * docker 部署测试
 
