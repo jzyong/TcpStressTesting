@@ -3,7 +3,7 @@
 &nbsp;&nbsp;Distributed customized TCP protocol stress testing,statistics tool.
 Because the TCP protocol of each project is different, the project cannot be directly used.
 You need to modify the TCP packet logic and application logic by yourself.
-[Document](https://jzyong.github.io/TcpStressTesting/)
+
 
 | Directory | Description                   |
 |-----------|-------------------------------|
