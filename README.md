@@ -4,7 +4,6 @@
 Because the TCP protocol of each project is different, the project cannot be directly used.
 You need to modify the TCP packet logic and application logic by yourself.
 
-
 | Directory | Description                   |
 |-----------|-------------------------------|
 | client    | tcp client logic(need modify) |
@@ -12,6 +11,8 @@ You need to modify the TCP packet logic and application logic by yourself.
 | core      | core logic                    |
 | example   | server demo                   |
 | res       | document,script               |
+
+![architecture](res/img/architecture.png)
 
 ## Features
 
@@ -55,6 +56,5 @@ docker-compose up -d
 
 ## TODO
 * Unity 界面统计整理
-* 架构图绘制
 
 
