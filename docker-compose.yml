@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  TcpStressTestingMaster:
+    image: tcp-stress-testing:${IMAGE_VERSION}
+    container_name: TcpStressTestingMaster
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    environment:
+      - OPTS=-config config/application_config_jzy_master.json
+    ports:
+      - "5010:5010"
+  TcpStressTestingWork1:
+    image: tcp-stress-testing:${IMAGE_VERSION}
+    container_name: TcpStressTestingWork1
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    environment:
+      - OPTS=-config config/application_config_jzy_worker1.json
+    ports:
+      - "5011:5011"
+  TcpStressTestingWork2:
+    image: tcp-stress-testing:${IMAGE_VERSION}
+    container_name: TcpStressTestingWork2
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: unless-stopped
+    environment:
+      - OPTS=-config config/application_config_jzy_worker2.json
+    ports:
+      - "5012:5012"

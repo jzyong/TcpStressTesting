@@ -30,7 +30,7 @@ You need to modify the TCP packet logic and application logic by yourself.
 git clone https://github.com/jzyong/TcpStressTesting.git
 cd TcpStressTesting
 
-# 2. Build and run tool
+# 2. Build and run tool, change the ip address of the configuration file
 go build
 .\TcpStressTesting.exe --config config/application_config_jzy_master.json
 
@@ -45,14 +45,16 @@ go test
 ```
 
 ### Docker
- TODO
+change the ip address of the configuration file
+```shell
+docker-compose up -d
+```
 
 ### Statistical UI
  TODO
 
 ## TODO
-
 * Unity 界面统计整理
-* docker compose 部署测试
+* 架构图绘制
 
 
