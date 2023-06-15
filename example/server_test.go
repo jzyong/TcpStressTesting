@@ -100,6 +100,12 @@ func handleConnection(conn net.Conn) {
 			}
 			log2.Info("心跳返回：%v", heartResponse)
 			sendMsg(conn, heartResponse, message.MID_HeartRes, seq)
+
+			//主动推送
+			reconnectResponse := &message.ReconnectResponse{
+				UserId: 0,
+			}
+			sendMsg(conn, reconnectResponse, message.MID_ReconnectRes, 0)
 			break
 		}
 	}

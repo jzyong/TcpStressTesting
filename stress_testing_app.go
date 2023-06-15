@@ -71,7 +71,7 @@ func main() {
 // 初始化项目配置和日志
 func initConfigAndLog() {
 	//1.配置文件路径
-	configPath := flag.String("config", "D:\\Go\\slots-service\\stress-testing-service\\config\\application_config_jzy_master.json", "配置文件加载路径")
+	configPath := flag.String("config", "D:\\Go\\TcpStressTesting\\config\\application_config_jzy_master.json", "配置文件加载路径")
 	flag.Parse()
 
 	config.FilePath = *configPath
