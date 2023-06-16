@@ -56,8 +56,7 @@ docker-compose up -d
 
 ### Statistical UI
 
-[UI Client](https://github.com/jzyong/TcpStressTestingUI)   
-[Download](#)  
+[UI Client](https://github.com/jzyong/TcpStressTestingUI)&nbsp;&nbsp;&nbsp;&nbsp;[Download](https://github.com/jzyong/TcpStressTestingUI/releases)  
 ![dashboard1](res/img/dashboard1.png)
 ![dashboard2](res/img/dashboard2.png)
 ![request](res/img/request.png)

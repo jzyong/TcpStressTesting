@@ -98,7 +98,7 @@ func handleConnection(conn net.Conn) {
 				fmt.Println("Error marshalling:", err)
 				return
 			}
-			log2.Info("心跳返回：%v", heartResponse)
+			//log2.Info("心跳返回：%v", heartResponse)
 			sendMsg(conn, heartResponse, message.MID_HeartRes, seq)
 
 			//主动推送
